@@ -1,0 +1,16 @@
+services:
+  astro:
+    build: .
+
+    working_dir: /app
+
+    ports:
+      - "4321:4321"
+
+    volumes:
+      - ./webs:/app/webs
+
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+    command: bash
