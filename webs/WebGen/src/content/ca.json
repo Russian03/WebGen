@@ -1,0 +1,36 @@
+{
+    "nav": {
+      "services": "Serveis",
+      "pricing": "Plans",
+      "projects": "Projectes",
+      "contact": "Contacte"
+    },
+  
+    "hero": {
+      "title": "Creem la web del teu negoci.",
+      "subtitle": "Ràpid. Moderna. Sense complicacions.",
+      "primaryButton": "Veure plans",
+      "secondaryButton": "Parlem"
+    },
+  
+    "features": {
+      "title": "Tot el que necessita el teu negoci",
+      "items": [
+        "Webs modernes",
+        "SEO i posicionament",
+        "Manteniment continu",
+        "Hosting i domini",
+        "Suport tècnic",
+        "Marketing digital"
+      ]
+    },
+  
+    "pricing": {
+      "title": "Plans simples i escalables"
+    },
+  
+    "cta": {
+      "title": "Digitalitza el teu negoci avui.",
+      "button": "Comencem"
+    }
+  }

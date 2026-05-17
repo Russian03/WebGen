@@ -1,0 +1,36 @@
+{
+    "nav": {
+      "services": "Servicios",
+      "pricing": "Planes",
+      "projects": "Proyectos",
+      "contact": "Contacto"
+    },
+  
+    "hero": {
+      "title": "Creamos la web de tu negocio.",
+      "subtitle": "Rápida. Moderna. Sin complicaciones.",
+      "primaryButton": "Ver planes",
+      "secondaryButton": "Hablemos"
+    },
+  
+    "features": {
+      "title": "Todo lo que necesita tu negocio",
+      "items": [
+        "Webs modernas",
+        "SEO y posicionamiento",
+        "Mantenimiento continuo",
+        "Hosting y dominio",
+        "Soporte técnico",
+        "Marketing digital"
+      ]
+    },
+  
+    "pricing": {
+      "title": "Planes simples y escalables"
+    },
+  
+    "cta": {
+      "title": "Digitaliza tu negocio hoy.",
+      "button": "Empecemos"
+    }
+  }

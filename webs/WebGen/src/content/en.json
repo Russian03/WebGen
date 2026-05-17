@@ -1,0 +1,36 @@
+{
+    "nav": {
+      "services": "Services",
+      "pricing": "Pricing",
+      "projects": "Projects",
+      "contact": "Contact"
+    },
+  
+    "hero": {
+      "title": "We build your business website.",
+      "subtitle": "Fast. Modern. Hassle-free.",
+      "primaryButton": "View pricing",
+      "secondaryButton": "Let's talk"
+    },
+  
+    "features": {
+      "title": "Everything your business needs",
+      "items": [
+        "Modern websites",
+        "SEO and positioning",
+        "Ongoing maintenance",
+        "Hosting and domain",
+        "Technical support",
+        "Digital marketing"
+      ]
+    },
+  
+    "pricing": {
+      "title": "Simple and scalable plans"
+    },
+  
+    "cta": {
+      "title": "Take your business digital today.",
+      "button": "Get started"
+    }
+  }

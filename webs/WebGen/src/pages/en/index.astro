@@ -1,0 +1,28 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+
+import Navbar from "../../components/layout/Navbar.jsx";
+import Hero from "../../components/sections/Hero.jsx";
+import Features from "../../components/sections/Features.jsx";
+import Pricing from "../../components/sections/Pricing.jsx";
+import CTA from "../../components/sections/CTA.jsx";
+import Footer from "../../components/layout/Footer.jsx";
+
+import { getTranslations } from "../../lib/translations";
+
+const t = getTranslations("en");
+---
+
+<MainLayout>
+  <Navbar client:load t={t} />
+
+  <Hero client:load t={t} />
+
+  <Features t={t} />
+
+  <Pricing t={t} />
+
+  <CTA t={t} />
+
+  <Footer />
+</MainLayout>
