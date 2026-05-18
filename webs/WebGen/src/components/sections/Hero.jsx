@@ -12,7 +12,7 @@ export default function Hero({ t }) {
           transition={{ duration: 0.8 }}
         >
           <p className="uppercase tracking-[0.3em] text-white/50 mb-6 text-sm">
-            WEBS PER NEGOCIS
+            {t.hero.pretitle}
           </p>
 
           <h1 className="text-6xl lg:text-8xl font-bold leading-none mb-8">

@@ -47,7 +47,7 @@ export default function Navbar({ t }) {
 
         {/* Logo */}
         <div className="text-2xl font-bold">
-          WebStudio
+          WebGen
         </div>
 
         {/* Nav */}
