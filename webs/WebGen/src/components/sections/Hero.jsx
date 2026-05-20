@@ -1,7 +1,11 @@
 import { motion } from "framer-motion";
 import Button from "../ui/Button";
+import { useState } from "react";
+import ContactModal from "../ui/ContactModal";
 
 export default function Hero({ t }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <section className="min-h-screen flex items-center relative overflow-hidden">
       <div className="container-custom grid lg:grid-cols-2 gap-20 items-center">
@@ -25,7 +29,9 @@ export default function Hero({ t }) {
 
           <div className="flex gap-4">
             <Button>{t.hero.primaryButton}</Button>
-            <Button>{t.hero.secondaryButton}</Button>
+            <Button onClick={() => setIsOpen(true)}>
+              {t.hero.secondaryButton}
+            </Button>
           </div>
         </motion.div>
 
@@ -37,6 +43,11 @@ export default function Hero({ t }) {
           </div>
         </div>
       </div>
+      <ContactModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        t={t}
+      />
     </section>
   );
 }

@@ -33,5 +33,17 @@
     "cta": {
       "title": "Digitalitza el teu negoci avui.",
       "button": "Comencem"
+    },
+
+    "contact": {
+      "title": "Parlem",
+      "name": "Nom",
+      "phone": "Telèfon mòbil",
+      "email": "Correu",
+      "message": "Explica'ns el teu projecte...",
+      "send": "Enviar",
+      "sending": "Enviant...",
+      "success": "Missatge enviat!",
+      "error": "Error enviant missatge"
     }
   }

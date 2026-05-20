@@ -33,5 +33,17 @@
     "cta": {
       "title": "Digitaliza tu negocio hoy.",
       "button": "Empecemos"
+    },
+
+    "contact": {
+      "title": "Hablemos",
+      "name": "Nombre",
+      "phone": "Teléfono móvil",
+      "email": "Correo",
+      "message": "Cuéntanos tu proyecto...",
+      "send": "Enviar",
+      "sending": "Enviando...",
+      "success": "¡Mensaje enviado!",
+      "error": "Error enviando mensaje"
     }
   }

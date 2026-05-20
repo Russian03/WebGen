@@ -33,5 +33,17 @@
     "cta": {
       "title": "Take your business digital today.",
       "button": "Get started"
+    },
+
+    "contact": {
+      "title": "Let's talk",
+      "name": "Name",
+      "phone": "Phone number",
+      "email": "Email",
+      "message": "Tell us about your project...",
+      "send": "Send",
+      "sending": "Sending...",
+      "success": "Message sent!",
+      "error": "Error sending message"
     }
   }
