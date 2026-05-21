@@ -36,11 +36,71 @@ export default function Hero({ t }) {
         </motion.div>
 
         <div className="relative h-[600px] hidden lg:block">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-white/10 blur-3xl" />
 
-          <div className="absolute top-20 right-10 w-[420px] rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
-            <div className="h-[300px] rounded-2xl bg-gradient-to-br from-zinc-800 to-zinc-900" />
+          {/* Glow */}
+          <div
+            className="
+              absolute
+              top-10
+              right-0
+              w-[450px]
+              h-[450px]
+              rounded-full
+              bg-white/10
+              blur-3xl
+            "
+          />
+
+          {/* Card principal */}
+          <div
+            className="
+              absolute
+              top-20
+              right-10
+              w-[420px]
+              rounded-3xl
+              border
+              border-white/10
+              bg-white/[0.03]
+              backdrop-blur-xl
+              overflow-hidden
+              shadow-2xl
+            "
+          >
+
+            {/* Fake navbar */}
+            <div className="flex items-center gap-2 px-6 py-4 border-b border-white/10">
+
+              <div className="w-3 h-3 rounded-full bg-red-400/70" />
+              <div className="w-3 h-3 rounded-full bg-yellow-400/70" />
+              <div className="w-3 h-3 rounded-full bg-green-400/70" />
+
+            </div>
+
+            {/* Fake content */}
+            <div className="p-6 space-y-4">
+
+              <div className="h-8 rounded-xl bg-white/10 w-2/3" />
+
+              <div className="space-y-3">
+
+                <div className="h-4 rounded bg-white/5" />
+                <div className="h-4 rounded bg-white/5 w-5/6" />
+                <div className="h-4 rounded bg-white/5 w-4/6" />
+
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-6">
+
+                <div className="h-32 rounded-2xl bg-white/5" />
+                <div className="h-32 rounded-2xl bg-white/5" />
+
+              </div>
+
+            </div>
+
           </div>
+
         </div>
       </div>
       <ContactModal
