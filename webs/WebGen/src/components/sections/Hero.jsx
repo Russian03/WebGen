@@ -1,13 +1,35 @@
 import { motion } from "framer-motion";
 import Button from "../ui/Button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ContactModal from "../ui/ContactModal";
 
 export default function Hero({ t }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+
+    const handleOpenModal = () => {
+      setIsOpen(true);
+    };
+
+    window.addEventListener(
+      "open-contact-modal",
+      handleOpenModal
+    );
+
+    return () => {
+      window.removeEventListener(
+        "open-contact-modal",
+        handleOpenModal
+      );
+    };
+
+  }, []);
+
   return (
     <section className="min-h-screen flex items-center relative overflow-hidden">
+
       <div className="container-custom grid lg:grid-cols-2 gap-20 items-center">
 
         <motion.div
@@ -28,11 +50,25 @@ export default function Hero({ t }) {
           </p>
 
           <div className="flex gap-4">
-            <Button>{t.hero.primaryButton}</Button>
+
+            <Button
+              onClick={() => {
+                document
+                  .getElementById("pricing")
+                  ?.scrollIntoView({
+                    behavior: "smooth"
+                  });
+              }}
+            >
+              {t.hero.primaryButton}
+            </Button>
+
             <Button onClick={() => setIsOpen(true)}>
               {t.hero.secondaryButton}
             </Button>
+
           </div>
+
         </motion.div>
 
         <div className="relative h-[600px] hidden lg:block">
@@ -68,33 +104,25 @@ export default function Hero({ t }) {
             "
           >
 
-            {/* Fake navbar */}
             <div className="flex items-center gap-2 px-6 py-4 border-b border-white/10">
-
               <div className="w-3 h-3 rounded-full bg-red-400/70" />
               <div className="w-3 h-3 rounded-full bg-yellow-400/70" />
               <div className="w-3 h-3 rounded-full bg-green-400/70" />
-
             </div>
 
-            {/* Fake content */}
             <div className="p-6 space-y-4">
 
               <div className="h-8 rounded-xl bg-white/10 w-2/3" />
 
               <div className="space-y-3">
-
                 <div className="h-4 rounded bg-white/5" />
                 <div className="h-4 rounded bg-white/5 w-5/6" />
                 <div className="h-4 rounded bg-white/5 w-4/6" />
-
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-6">
-
                 <div className="h-32 rounded-2xl bg-white/5" />
                 <div className="h-32 rounded-2xl bg-white/5" />
-
               </div>
 
             </div>
@@ -102,12 +130,15 @@ export default function Hero({ t }) {
           </div>
 
         </div>
+
       </div>
+
       <ContactModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         t={t}
       />
+
     </section>
   );
 }

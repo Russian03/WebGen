@@ -55,7 +55,18 @@ export default function Navbar({ t }) {
           <a href="#services">{t.nav.services}</a>
           <a href="#pricing">{t.nav.pricing}</a>
           <a href="#projects">{t.nav.projects}</a>
-          <a href="#contact">{t.nav.contact}</a>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+
+              window.dispatchEvent(
+                new Event("open-contact-modal")
+              );
+            }}
+          >
+            {t.nav.contact}
+          </a>
         </nav>
 
         {/* Selector idioma */}
