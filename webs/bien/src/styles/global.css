@@ -1,0 +1,463 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+@font-face {
+  font-family: "Personal";
+  src: url("/fonts/personal.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.stage {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.layerTop {
+  z-index: 2;
+  clip-path: inset(0% 0% 0% 0%);
+}
+
+.layerBottom {
+  z-index: 1;
+}
+
+.canvas {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.space {
+  flex: 1;
+}
+
+.space:first-of-type {
+  flex: 0.4;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.subTitle {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: normal;
+  font-style: normal;
+  text-align: center;
+  line-height: 1.1;
+  font-size: 1.3rem;
+  margin: 1vh;
+}
+
+.logoBox {
+  height: clamp(10rem, 18vw, 23rem);
+  width: clamp(28rem, 65vw, 60rem);
+}
+
+.logoMask {
+  -webkit-mask-image: url("/images/logo.svg");
+  mask-image: url("/images/logo.svg");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.scrollArrow {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.bottomNav {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: "Personal", sans-serif;
+  font-size: clamp(1.4rem, 4vw, 3.75rem);
+  line-height: 0.756;
+  letter-spacing: -0.058em;
+  font-weight: 400;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.navBtn:hover,
+.navBtn:hover * {
+  text-decoration: underline !important;
+}
+
+.infoBlock {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.8rem;
+  display: flex;
+  flex-direction: row;
+  gap: 2.5rem;
+}
+
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  font-family: "Inter", sans-serif;
+  font-size: clamp(0.8rem, 1.8vw, 1rem);
+  text-align: left;
+}
+
+.infoText,
+.infoLabel,
+.infoLink {
+  font-family: "Personal", sans-serif;
+  font-size: clamp(0.55rem, 1.4vw, 1rem);
+  line-height: 1.125;
+  font-weight: 400;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.infoLabel {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.infoLink {
+  text-decoration: none;
+  color: #000;
+  transition: color 0.2s ease;
+  display: block;
+  line-height: 1.1;
+}
+
+.infoLink:hover {
+  color: #555;
+}
+
+.topNav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1rem;
+  z-index: 10;
+  background-color: white;
+}
+
+.topNavLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.topNavInfo {
+  position: static;
+}
+
+.topNavLogo {
+  height: clamp(2rem, 5vw, 3.5rem);
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.topNavLinks {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  flex-shrink: 0;
+}
+
+.hamburgerBtn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 40;
+  color: black;
+}
+
+.hamburgerBtnOpen {
+  color: white;
+}
+
+.dropdownMenu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1.2rem;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* Carta: el botón está arriba, el menú baja desde arriba */
+.dropdownMenuTop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 6rem 1.5rem 2rem;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform: translateY(-100%);
+}
+
+/* Hero: el botón está abajo, el menú sube desde abajo, a todo el ancho, fondo borroso */
+.dropdownMenuBottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem 1.5rem 3rem;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transform: translateY(100%);
+}
+
+.dropdownMenuBottom .navBtn {
+  color: white;
+}
+
+.dropdownMenuOpen {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdownMenuOpen {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.parent {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.plato {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.platoImgEmpty {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #fff;
+  display: block;
+}
+
+.kebaperoWrapper {
+  position: absolute;
+  inset: 0;
+  bottom: 20%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.kebaperoBox {
+  position: relative;
+  width: 80%;
+}
+
+.kebaperoBody {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.kebaperoHand {
+  position: absolute;
+  top: 60%;
+  left: 0%;
+  width: 40%;
+  height: auto;
+}
+
+.platoImg {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.platoInfo {
+  background-color: #000;
+  font-family: "Personal", sans-serif;
+  color: white;
+  display: flex;
+  flex-direction: row;
+  padding: 0.6rem 0.8rem;
+  gap: 1rem;
+}
+
+.platoInfoEmpty {
+  min-height: 3rem;
+}
+
+.platoInfoLeft {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.platoInfoRight {
+  flex: 1;
+  padding-left: 1rem;
+  display: flex;
+  align-items: flex-end;
+}
+
+.platoIndex {
+  font-size: clamp(0.8rem, 1.3vw, 1rem);
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.platoTitle {
+  font-size: clamp(1.5rem, 2.4vw, 1.8rem);
+  font-weight: normal;
+  margin: 0;
+  margin-top: -0.45rem;
+}
+
+.platoDesc {
+  font-size: clamp(0.6rem, 1.1vw, 0.75rem);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.cartaPage {
+  position: relative;
+  padding-top: 5rem;
+  background-color: white;
+}
+
+.cartaFooter {
+  display: none;
+  padding: 2rem 1rem 3rem;
+}
+
+.cartaFooter .infoBlock {
+  position: static;
+  width: 100%;
+  justify-content: center;
+  gap: 3rem;
+}
+
+/* Punto en el que el nav de texto empieza a arriesgar solaparse: pasa a hamburguesa */
+@media (max-width: 640px) {
+  .bottomNav .navLinkText,
+  .topNavLinks {
+    display: none;
+  }
+
+  .hamburgerBtn {
+    display: flex;
+  }
+
+  .infoText,
+  .infoLabel,
+  .infoLink {
+    font-size: clamp(0.5rem, 1.6vw, 0.75rem);
+  }
+}
+
+/* Hero en móvil: WHERE/WHEN pegado abajo a la izquierda, con margen lateral pequeño */
+@media (max-width: 768px) {
+  .layerTop .infoBlock,
+  .layerBottom .infoBlock {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 0.4rem;
+    left: 0.6rem;
+    right: auto;
+    bottom: 0.2rem;
+    width: auto;
+  }
+
+  .layerTop .infoCol,
+  .layerBottom .infoCol {
+    text-align: left;
+  }
+
+  .layerTop .infoText,
+  .layerTop .infoLabel,
+  .layerTop .infoLink,
+  .layerBottom .infoText,
+  .layerBottom .infoLabel,
+  .layerBottom .infoLink {
+    font-size: clamp(0.45rem, 3vw, 0.65rem);
+    white-space: normal;
+  }
+
+  .topNavInfo {
+    display: none;
+  }
+
+  .cartaFooter {
+    display: block;
+  }
+
+  .parent {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+}
