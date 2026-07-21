@@ -1,0 +1,219 @@
+---
+// Rebem les variables necessàries des del Layout pare
+const { currentLocale, t, languageToggleLink } = Astro.props;
+---
+
+<nav class="navbar">
+  <div class="logo">{t('shop.name')}</div>
+
+  <button class="menu-toggle" id="menu-toggle" aria-label="Obrir menú">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+  </button>
+
+  <div class="nav-links" id="nav-links">
+    <a href="#home">{t('nav.home')}</a>
+    <a href="#services">{t('nav.services')}</a>
+    <button class="open-booking-btn nav-cta">{t('hero.cta')}</button>
+    <a href={languageToggleLink} class="lang-selector">
+      {currentLocale === 'ca' ? 'ES' : 'CA'}
+    </a>
+  </div>
+</nav>
+
+<script>
+  // Control de l'obertura i tancament del menú en mòbil
+  const menuToggle = document.getElementById('menu-toggle');
+  const navLinks = document.getElementById('nav-links');
+  const items = navLinks?.querySelectorAll('a, button');
+
+  menuToggle?.addEventListener('click', () => {
+    menuToggle.classList.toggle('active');
+    navLinks?.classList.toggle('active');
+  });
+
+  // Tanca el menú automàticament en clicar qualsevol opció
+  items?.forEach(item => {
+    item.addEventListener('click', () => {
+      menuToggle?.classList.remove('active');
+      navLinks?.classList.remove('active');
+    });
+  });
+</script>
+
+<style>
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 50px;
+    background-color: rgba(247, 245, 240, 0.95); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(191, 163, 122, 0.15);
+  }
+  
+  .logo {
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: 5px;
+    color: #1a1917;
+    transition: color 0.3s ease;
+  }
+  
+  .logo:hover {
+    color: #bfa37a;
+  }
+  
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 35px;
+    font-weight: 500;
+  }
+
+  .nav-links a {
+    color: #2e2c29 !important;
+    text-decoration: none !important;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    position: relative;
+    transition: color 0.3s ease;
+  }
+
+  .nav-links a:not(.lang-selector)::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: #bfa37a;
+    transition: width 0.3s ease;
+  }
+  
+  .nav-links a:not(.lang-selector):hover::after {
+    width: 100%;
+  }
+
+  .nav-links a:hover {
+    color: #bfa37a !important;
+  }
+
+  .nav-cta {
+    background-color: #1a1917;
+    color: #ffffff;
+    border: none;
+    padding: 11px 24px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .nav-cta:hover {
+    background-color: #bfa37a;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(191, 163, 122, 0.2);
+  }
+  
+  .lang-selector {
+    border: 1px solid rgba(26, 25, 23, 0.2);
+    padding: 6px 14px;
+    border-radius: 0px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1a1917 !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease;
+  }
+  
+  .lang-selector:hover {
+    border-color: #1a1917;
+    background-color: #1a1917;
+    color: #fff !important;
+  }
+
+  /* BOTÓ HAMBURGUESA (Amagat en ordinadors) */
+  .menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 26px;
+    height: 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1001;
+  }
+
+  .menu-toggle .bar {
+    width: 100%;
+    height: 2px;
+    background-color: #1a1917;
+    transition: all 0.3s ease;
+  }
+
+  /* Animació del botó a 'X' quan s'obre */
+  .menu-toggle.active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+  .menu-toggle.active .bar:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-toggle.active .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  /* --- ADAPTACIÓ NOMÉS PER A MÒBIL (< 768px) --- */
+  @media (max-width: 768px) {
+    .navbar {
+      padding: 18px 20px; /* Reduïm espai lateral a mòbil */
+    }
+
+    .menu-toggle {
+      display: flex; /* Es mostra la icona de 3 ratlles */
+    }
+
+    .nav-links {
+      position: absolute;
+      top: 100%; /* S'obre just a sota de la barra */
+      left: 0;
+      width: 100%;
+      background-color: rgba(247, 245, 240, 0.98);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px;
+      gap: 22px;
+      border-bottom: 1px solid rgba(191, 163, 122, 0.2);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+
+      /* Amagat per defecte */
+      display: none;
+    }
+
+    /* Quan s'activa amb JavaScript */
+    .nav-links.active {
+      display: flex;
+    }
+
+    .nav-cta {
+      width: 100%;
+      max-width: 250px;
+      text-align: center;
+    }
+  }
+</style>

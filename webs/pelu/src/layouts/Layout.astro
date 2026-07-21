@@ -1,0 +1,35 @@
+---
+import '../styles/global.css';
+import { useTranslations } from '../locales/utils';
+// 1. Importem el component de la Navbar modular
+import Navbar from '../components/Navbar.astro';
+
+const { currentLocale } = Astro;
+const t = useTranslations(currentLocale);
+
+// Mantenim la teva lògica exacta per generar els enllaços de canvi d'idioma
+const currentPath = Astro.url.pathname;
+const languageToggleLink = currentLocale === 'ca' 
+  ? `/es${currentPath}` 
+  : currentPath.replace(/^\/es/, '') || '/';
+---
+
+<!doctype html>
+<html lang={currentLocale}>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>HairStudio</title>
+		<script is:inline src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+	</head>
+	<body>
+		<Navbar 
+			currentLocale={currentLocale} 
+			t={t} 
+			languageToggleLink={languageToggleLink} 
+		/>
+		
+		<slot />
+	</body>
+</html>

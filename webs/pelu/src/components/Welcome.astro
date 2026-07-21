@@ -1,0 +1,394 @@
+---
+import { useTranslations } from '../locales/utils';
+import BookingModal from './BookingModal.astro';
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div id="home" class="hero">
+  <div class="hero-content">
+    <h1 class="brand-name">{t('shop.name')}</h1>
+    <h2 class="subtitle-main">{t('hero.title')}</h2>
+    <p class="info-text">{t('hero.subtitle')}</p>
+    <button class="cta open-booking-btn" data-service="">{t('hero.cta')}</button>
+  </div>
+</div>
+
+<div id="services" class="services-section">
+  <div class="services-container">
+    <h2 class="section-title">{t('services.title')}</h2>
+    <p class="section-subtitle">{t('services.subtitle')}</p>
+    
+    <div class="services-grid">
+      <div class="service-card open-booking-btn" data-service="tallar">
+        <div class="card-image-wrapper">
+          <img src="https://as1.ftcdn.net/jpg/03/10/21/40/1000_F_310214064_CFSi6HpZSqgGFU1QjGYPi8mhl1teABwC.jpg" alt="Tallar" />
+        </div>
+        <div class="card-content">
+          <h3>{t('booking.service.cut')}</h3>
+          <p>{t('services.cut.desc')}</p>
+          <span class="card-link">{t('hero.cta')} &rarr;</span>
+        </div>
+      </div>
+
+      <div class="service-card open-booking-btn" data-service="tallar-rentar">
+        <div class="card-image-wrapper">
+          <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=60&w=500" alt="Rentar" />
+        </div>
+        <div class="card-content">
+          <h3>{t('booking.service.wash')}</h3>
+          <p>{t('services.wash.desc')}</p>
+          <span class="card-link">{t('hero.cta')} &rarr;</span>
+        </div>
+      </div>
+
+      <div class="service-card open-booking-btn" data-service="color">
+        <div class="card-image-wrapper">
+          <img src="https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=60&w=500" alt="Color" />
+        </div>
+        <div class="card-content">
+          <h3>{t('booking.service.color')}</h3>
+          <p>{t('services.color.desc')}</p>
+          <span class="card-link">{t('hero.cta')} &rarr;</span>
+        </div>
+      </div>
+
+      <div class="service-card open-booking-btn" data-service="uv">
+        <div class="card-image-wrapper">
+          <img src="https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=60&w=500" alt="Tractament UV" />
+        </div>
+        <div class="card-content">
+          <h3>{t('booking.service.uv')}</h3>
+          <p>{t('services.uv.desc')}</p>
+          <span class="card-link">{t('hero.cta')} &rarr;</span>
+        </div>
+      </div>
+
+      <div class="service-card open-booking-btn" data-service="permanent">
+        <div class="card-image-wrapper">
+          <img src="https://www.mybeautygolden.com/wp-content/uploads/2024/02/permanente-madrid.jpg" alt="Permanent" />
+        </div>
+        <div class="card-content">
+          <h3>{t('booking.service.perm')}</h3>
+          <p>{t('services.perm.desc')}</p>
+          <span class="card-link">{t('hero.cta')} &rarr;</span>
+        </div>
+      </div>
+
+      <div class="service-card open-booking-btn" data-service="barba">
+        <div class="card-image-wrapper">
+          <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=60&w=500" alt="Barba" />
+        </div>
+        <div class="card-content">
+          <h3>{t('booking.service.shave')}</h3>
+          <p>{t('services.shave.desc')}</p>
+          <span class="card-link">{t('hero.cta')} &rarr;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<BookingModal lang={lang} />
+
+<script>
+  import { initBookingModal } from './BookingLogic.js';
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Inicialitzem la lògica del modal
+  initBookingModal();
+
+  function setupAnimations() {
+    // 1. ANIMACIÓ DEL HERO (Textos + Botó CTA independent)
+    const heroElements = document.querySelectorAll('.brand-name, .subtitle-main, .info-text');
+    const heroCta = document.querySelector('.hero .cta');
+
+    if (heroElements.length > 0) {
+      gsap.fromTo(
+        heroElements,
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: 'power3.out',
+          clearProps: 'transform,opacity'
+        }
+      );
+    }
+
+    if (heroCta) {
+      gsap.fromTo(
+        heroCta,
+        { y: 20, opacity: 0, scale: 0.95 },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.8,
+          delay: 0.4, // S'activa just quan acaben de sortir els textos
+          ease: 'power3.out',
+          clearProps: 'transform,opacity' // Garanteix que el botó es vegi i es pugui clicar 100%
+        }
+      );
+    }
+
+    // 2. TÍTOL DE SERVEIS
+    gsap.fromTo(
+      '.section-title, .section-subtitle',
+      { y: 30, opacity: 0 },
+      {
+        scrollTrigger: {
+          trigger: '#services',
+          start: 'top 85%',
+          toggleActions: 'play none none none'
+        },
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: 'power2.out',
+        clearProps: 'transform,opacity'
+      }
+    );
+
+    // 3. TARGETES DE SERVEIS
+    gsap.fromTo(
+      '.service-card',
+      { y: 50, opacity: 0 },
+      {
+        scrollTrigger: {
+          trigger: '.services-grid',
+          start: 'top 85%',
+          toggleActions: 'play none none none'
+        },
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: 'power3.out',
+        clearProps: 'transform,opacity'
+      }
+    );
+  }
+
+  // Execució quan el DOM està a punt
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    setupAnimations();
+  } else {
+    window.addEventListener('DOMContentLoaded', () => {
+      setupAnimations();
+    });
+  }
+
+  // Refresc per recalcular posicions quan es carreguin les imatges completament
+  window.addEventListener('load', () => {
+    ScrollTrigger.refresh();
+  });
+</script>
+
+<style>
+  .hero {
+    /* 100dvh s'adapta dinàmicament a la pantalla real del mòbil (ignorant la barra del navegador) */
+    height: 100dvh; 
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+
+    /* Si tens la navbar fixa a dalt, fem servir un padding superior en lloc de margin-top */
+    /* així l'alçada total de la secció es manté exactament al 100% de la pantalla */
+    padding-top: 70px; 
+    margin-top: 0;
+  }
+  .hero-content {
+    background: rgba(255, 255, 255, 0.85);
+    padding: 50px 60px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.03);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .brand-name { font-size: 4.5rem; margin: 0; letter-spacing: 8px; font-weight: 300; color: var(--text-main); }
+  .subtitle-main { font-size: 1.4rem; margin: 15px 0 20px 0; font-weight: 400; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
+  .info-text { font-size: 1rem; color: var(--text-muted); max-width: 550px; margin: 0 auto 40px auto; line-height: 1.6; }
+  
+  .cta {
+    padding: 16px 45px; background-color: var(--text-main); color: #fff;
+    font-weight: 500; border: none; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;
+  }
+  .cta:hover { background-color: var(--accent); }
+
+  /* SECCIÓ DE SERVEIS */
+  .services-section { 
+    padding: 90px 20px; 
+    background-color: rgba(255, 255, 255, 0.4); 
+  }
+  .services-container { 
+    max-width: 1140px; 
+    margin: 0 auto; 
+    text-align: center; 
+  }
+  .section-title { 
+    font-size: 2.5rem; 
+    font-weight: 300; 
+    letter-spacing: 3px; 
+    color: var(--text-main);
+    margin-bottom: 12px; 
+  }
+  .section-subtitle { 
+    color: var(--text-muted); 
+    margin-bottom: 60px; 
+    font-size: 1.05rem; 
+  }
+  
+  /* GRID DE TARGETES MODÈRNES */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 35px; /* Una mica més d'aire entre targetes */
+  }
+  
+  .service-card {
+    background: #ffffff;
+    /* Cantons moderns arrodonits, estil boutique actual */
+    border-radius: 24px; 
+    border: 1px solid rgba(28, 26, 23, 0.04);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    overflow: hidden;
+    padding: 16px; /* Espai interior perquè la imatge floti dins la targeta */
+    /* Ombra suau de catàleg de luxe */
+    box-shadow: 0 10px 30px rgba(28, 26, 23, 0.03);
+    /* Transició súper fluida estil Apple */
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  /* EFECTE QUAN L'USUARI PASSA EL RATOLÍ (HOVER) */
+  .service-card:hover {
+    transform: translateY(-8px) scale(1.01);
+    border-color: rgba(191, 163, 122, 0.3);
+    /* L'ombra es fa més gran i profunda quan s'aixeca */
+    box-shadow: 0 20px 40px rgba(191, 163, 122, 0.12);
+  }
+  
+  /* CONTENIDOR DE LA FOTO MODERNA */
+  .card-image-wrapper {
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+    /* També arrodonim la imatge perquè acompanyi el disseny */
+    border-radius: 16px; 
+    background-color: #f7f5f0;
+    position: relative;
+  }
+  
+  .card-image-wrapper img {
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover;
+    /* Zoom molt orgànic i suau en fer hover */
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .service-card:hover .card-image-wrapper img {
+    transform: scale(1.05);
+  }
+  
+  /* CONTINGUT DE TEXT DINS LA TARGETA */
+  .card-content { 
+    padding: 24px 12px 12px 12px; 
+    display: flex; 
+    flex-direction: column; 
+    flex-grow: 1; 
+  }
+  
+  .service-card h3 { 
+    font-size: 1.35rem; 
+    margin: 0 0 10px 0; 
+    font-weight: 400; 
+    letter-spacing: 0.5px; 
+    color: var(--text-main); 
+  }
+  
+  .service-card p { 
+    color: var(--text-muted); 
+    font-size: 0.95rem; 
+    line-height: 1.6; 
+    margin: 0 0 25px 0; 
+    flex-grow: 1; 
+  }
+  
+  /* L'ENLLAÇ INTERACTIU INFERIOR */
+  .card-link {
+    font-size: 0.8rem; 
+    text-transform: uppercase; 
+    letter-spacing: 2px; 
+    font-weight: 600; 
+    color: var(--text-main); 
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+  }
+  
+  /* La fletxa es mou subtilment a la dreta en fer hover de la targeta */
+  .service-card:hover .card-link { 
+    color: #bfa37a; 
+    transform: translateX(4px);
+  }
+
+  /* --- ADAPTACIÓ DEL HERO PER A MÒBIL (< 768px) --- */
+@media (max-width: 768px) {
+    .hero {
+      /* Ens assegurem que a mòbil també ocupe exactament la pantalla completa */
+      height: 100dvh;
+      min-height: 100dvh;
+      padding-top: 70px;
+      margin-top: 0;
+    }
+
+  .hero-content {
+    padding: 35px 20px; /* Reduïm els 60px de padding originals */
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 20px; /* Cantons lleugerament més suaus per a mòbil */
+  }
+
+  .brand-name {
+    font-size: 2.2rem; /* Baixem de 4.5rem a una mida que no es talli */
+    letter-spacing: 3px;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+
+  .subtitle-main {
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+    margin: 10px 0 15px 0;
+  }
+
+  .info-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+  }
+
+  .cta {
+    width: 100%; /* Botó ample de 100% fàcil de prémer amb el polze */
+    padding: 16px 20px;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+  }
+}
+</style>

@@ -1,0 +1,292 @@
+---
+import { useTranslations } from '../locales/utils';
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div class="modal-overlay" id="booking-modal">
+  <div class="booking-card">
+    <button class="close-btn" id="close-modal">&times;</button>
+    <h2>{t('form.book_a_date')}</h2>
+    
+    <form id="booking-form">
+      
+      <div class="form-group">
+        <label for="full-name">{t('form.user_credentials')}</label>
+        <input 
+          type="text" 
+          id="full-name" 
+          name="fullName" 
+          placeholder="Ex: Marta Puigarnau" 
+          required 
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="phone">{t('form.tel')}</label>
+        <input 
+          type="tel" 
+          id="phone" 
+          name="phone" 
+          placeholder="Ex: 600 000 000" 
+          pattern="[0-9]{9}" 
+          title="El telèfon ha de tenir 9 dígits"
+          required 
+        />
+      </div>
+
+      <div class="form-group">
+        <label>{t('booking.service')}</label>
+        <select name="service" id="service-select" required>
+          <option value="" disabled selected>Selecciona un servei</option>
+          <option value="tall_cabell">Tall de cabell</option>
+          <option value="tall_rentat">Tall i rentat</option>
+          <option value="bany_color">Bany de color</option>
+          <option value="llum_uva">Sessió amb llum UVA</option>
+          <option value="permanent">Permanent</option>
+          <option value="barba_ritual">Arreglar barba i ritual</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>{t('form.gender')}</label>
+        <div class="gender-toggle-group">
+          <button type="button" class="gender-btn active" data-gender="female">{t('form.women')}</button>
+          <button type="button" class="gender-btn" data-gender="male">{t('form.men')}</button>
+        </div>
+        <input type="hidden" name="gender" id="gender-input" value="female" />
+      </div>
+
+      <div class="form-group">
+        <label>{t('form.day_selector')}</label>
+        <div class="custom-calendar">
+          <div class="calendar-header">
+            <button type="button" id="prev-month">&lt;</button>
+            <span id="calendar-month-year">Juliol 2026</span>
+            <button type="button" id="next-month">&gt;</button>
+          </div>
+          <div class="calendar-weekdays">
+            <div>{t('days.mon')}</div><div>{t('days.tue')}</div><div>{t('days.wed')}</div><div>{t('days.thu')}</div><div>{t('days.fri')}</div><div>{t('days.sat')}</div><div>{t('days.sun')}</div>
+          </div>
+          <div class="calendar-days" id="calendar-days-container">
+            </div>
+        </div>
+        <input type="hidden" name="date" id="date-input" required />
+      </div>
+
+      <div class="form-group">
+        <label>{t('form.hour_selector')}</label>
+        <div class="time-grid">
+          <button type="button" class="time-btn" data-time="09:00">09:00</button>
+          <button type="button" class="time-btn" data-time="10:30">10:30</button>
+          <button type="button" class="time-btn" data-time="12:00">12:00</button>
+          <button type="button" class="time-btn" data-time="16:00">16:00</button>
+          <button type="button" class="time-btn" data-time="17:30">17:30</button>
+          <button type="button" class="time-btn" data-time="19:00">19:00</button>
+        </div>
+        <input type="hidden" name="time" id="time-input" required />
+      </div>
+
+      <button type="submit" class="submit-btn">{t('form.confirmation_button')}</button>
+    </form>
+  </div>
+</div>
+<style>
+    /* ACTUALITZA L'OVERLAY PERQUÈ SUPORTI EL CENTRAT ABSOLUT */
+    .modal-overlay {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100vw; 
+    height: 100vh;
+    background-color: rgba(26, 25, 23, 0);
+    display: flex;
+    justify-content: center; /* Centrat horitzontal */
+    align-items: center;     /* Centrat vertical */
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ACTUALITZA LA TARGETA PER TREURE POSSIBLES MARGES QUE LA DESPLACIN */
+    .booking-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 32px;
+    width: 92%;
+    max-width: 500px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 30px 70px rgba(28, 26, 23, 0.15);
+    border: 1px solid rgba(28, 26, 23, 0.04);
+    position: relative;
+    margin: 0 auto; /* Força que no hi hagi desplaçaments estranys */
+    transform: scale(0.95) translateY(20px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--text-main);
+    }
+
+  /* El truc de la barra de desplaçament perquè quedi polida */
+  .booking-card::-webkit-scrollbar {
+    width: 6px;
+  }
+  .booking-card::-webkit-scrollbar-thumb {
+    background-color: rgba(28, 26, 23, 0.1);
+    border-radius: 10px;
+  }
+
+  .modal-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+    background-color: rgba(26, 25, 23, 0.5); /* Fosc orgànic de fons */
+  }
+  .modal-overlay.show .booking-card {
+    transform: scale(1) translateY(0);
+  }
+
+  /* BOTÓ DE TANCAR EN FORMAT MINIMALISTA */
+  .close-btn {
+    position: absolute;
+    top: 20px; right: 25px;
+    background: none; border: none;
+    color: #1a1917; 
+    font-size: 1.8rem; 
+    font-weight: 300;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .close-btn:hover {
+    transform: scale(1.1);
+    color: #bfa37a;
+  }
+
+  .booking-card h2 { 
+    text-align: center; 
+    margin-bottom: 35px; 
+    color: #1a1917; 
+    font-weight: 300; 
+    letter-spacing: 2px;
+    font-size: 1.8rem;
+  }
+  
+  form { display: flex; flex-direction: column; gap: 24px; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  
+  label { 
+    font-size: 0.75rem; 
+    color: var(--text-muted); 
+    text-transform: uppercase; 
+    letter-spacing: 1.5px; 
+    font-weight: 600; 
+    padding-left: 4px;
+  }
+
+  /* INPUTS I SELECTS ARRODONITS I MODERNITZATS */
+  select, input[type="text"], input[type="tel"], input[type="email"] {
+    padding: 14px 18px; 
+    border-radius: 16px; /* Cantons arrodonits orgànics */
+    border: 1px solid #e8e6e2;
+    background-color: #fbfbfa; 
+    color: #1a1917; 
+    font-size: 0.95rem; 
+    outline: none;
+    transition: all 0.3s ease;
+  }
+  select:focus, input:focus {
+    border-color: #bfa37a;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(191, 163, 122, 0.15);
+  }
+
+  /* BOTONS DE GÈNERE ESTIL CÀPSULA */
+  .gender-toggle-group { display: flex; gap: 12px; }
+  .gender-btn { 
+    flex: 1; 
+    padding: 14px; 
+    border: 1px solid #e8e6e2; 
+    background: #fbfbfa; 
+    color: #1a1917; 
+    border-radius: 14px;
+    cursor: pointer; 
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease; 
+  }
+  .gender-btn:hover {
+    border-color: #bfa37a;
+  }
+  .gender-btn.active { 
+    background: #1a1917; 
+    color: #fff; 
+    border-color: #1a1917; 
+    box-shadow: 0 8px 20px rgba(26, 25, 23, 0.15);
+  }
+
+  /* CONTENIDOR DEL CALENDARI DE LUXE */
+  .custom-calendar { 
+    background: #fbfbfa; 
+    border: 1px solid #e8e6e2; 
+    padding: 20px; 
+    border-radius: 20px;
+  }
+  .calendar-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 15px; 
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .calendar-header button { background: none; border: none; color: #1a1917; font-size: 1.2rem; cursor: pointer; }
+  .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
+  .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+  
+  :global(.calendar-day-btn) { 
+    background: none; border: none; color: #1a1917; padding: 10px 0; 
+    text-align: center; cursor: pointer; font-size: 0.9rem; border-radius: 10px;
+    transition: all 0.2s;
+  }
+  :global(.calendar-day-btn:hover) { background: #e8e6e2; }
+  :global(.calendar-day-btn.active) { 
+    background: #1a1917 !important; color: #fff !important; font-weight: bold; 
+    box-shadow: 0 6px 15px rgba(26, 25, 23, 0.15);
+  }
+  
+  /* GRID D'HORES INTERACTIVES GUAIS */
+  .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  :global(.time-btn) { 
+    padding: 12px; background: #fbfbfa; border: 1px solid #e8e6e2; 
+    color: #1a1917; cursor: pointer; text-align: center; border-radius: 12px;
+    font-size: 0.9rem; transition: all 0.2s;
+  }
+  :global(.time-btn:hover) { border-color: #bfa37a; background: #ffffff; }
+  :global(.time-btn.active) { 
+    background: #bfa37a !important; color: #fff !important; border-color: #bfa37a !important; font-weight: 600;
+    box-shadow: 0 6px 15px rgba(191, 163, 122, 0.25);
+  }
+  
+  /* BOTÓ FINAL DE SUBMIT AMB EFECTE GLOW */
+  .submit-btn { 
+    padding: 16px; 
+    border: none; 
+    background-color: #1a1917; 
+    color: #fff; 
+    font-weight: 600; 
+    text-transform: uppercase; 
+    letter-spacing: 2px; 
+    cursor: pointer; 
+    margin-top: 15px; 
+    border-radius: 16px;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+  }
+  .submit-btn:hover { 
+    background-color: #bfa37a;
+    box-shadow: 0 10px 25px rgba(191, 163, 122, 0.3);
+    transform: translateY(-2px);
+  }
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+</style>
