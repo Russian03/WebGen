@@ -5,6 +5,7 @@ export function initBookingModal() {
   const openButtons = document.querySelectorAll('.open-booking-btn');
   const closeBtn = document.querySelector('.close-btn');
   const serviceSelect = document.querySelector('select[name="service"]');
+  const timeGridContainer = document.getElementById('time-grid-container');
 
   if (!modal) return;
 
@@ -13,14 +14,13 @@ export function initBookingModal() {
     e.preventDefault();
     document.body.style.overflow = 'hidden';
     
-    // Capturar el servei de la targeta clicada
     const clickedElement = e.currentTarget;
     const selectedService = clickedElement.getAttribute('data-service');
     
     if (selectedService && serviceSelect) {
       serviceSelect.value = selectedService;
     } else if (serviceSelect) {
-      serviceSelect.value = ""; // Si ve del Hero o Navbar, el deixa per triar
+      serviceSelect.value = "";
     }
 
     modal.classList.add('show');
@@ -51,7 +51,56 @@ export function initBookingModal() {
     });
   });
 
-  // 3. Control de Calendari Custom
+  // 3. Funció per carregar els slots des de Supabase segons la data
+  const timeInput = document.getElementById('time-input');
+
+  async function fetchAvailableSlots(formattedDate) {
+    if (!timeGridContainer) return;
+
+    timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #888;">Carregant horaris disponibles...</p>`;
+    if (timeInput) timeInput.value = '';
+
+    try {
+      const { data: slots, error } = await supabase
+        .from('slots')
+        .select('time')
+        .eq('date', formattedDate)
+        .eq('is_blocked', false)
+        .eq('is_reserved', false)
+        .order('time', { ascending: true });
+
+      if (error) throw error;
+
+      timeGridContainer.innerHTML = '';
+
+      if (!slots || slots.length === 0) {
+        timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #e74c3c;">No hi ha hores disponibles per a aquesta data.</p>`;
+        return;
+      }
+
+      slots.forEach(slot => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.classList.add('time-btn');
+        btn.setAttribute('data-time', slot.time);
+        btn.innerText = slot.time;
+
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          if (timeInput) timeInput.value = slot.time;
+        });
+
+        timeGridContainer.appendChild(btn);
+      });
+
+    } catch (err) {
+      console.error("Error en obtenir slots:", err);
+      timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #e74c3c;">Error en carregar les hores.</p>`;
+    }
+  }
+
+  // 4. Control de Calendari Custom
   const monthYearLabel = document.getElementById('calendar-month-year');
   const daysContainer = document.getElementById('calendar-days-container');
   const dateInput = document.getElementById('date-input');
@@ -82,10 +131,16 @@ export function initBookingModal() {
       dayBtn.addEventListener('click', () => {
         document.querySelectorAll('.calendar-day-btn').forEach(b => b.classList.remove('active'));
         dayBtn.classList.add('active');
+        
+        const selectedFormattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         if (dateInput) {
-          dateInput.value = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          dateInput.value = selectedFormattedDate;
         }
+
+        // CARREGUEM ELS SLOTS LLIURES PER A AQUESTA DATA
+        fetchAvailableSlots(selectedFormattedDate);
       });
+
       daysContainer.appendChild(dayBtn);
     }
   }
@@ -102,21 +157,7 @@ export function initBookingModal() {
   
   renderCalendar();
 
-  // 4. Control d'Hores
-  const timeInput = document.getElementById('time-input');
-  const timeBtns = document.querySelectorAll('.time-btn');
-
-  timeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      timeBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      if (timeInput) {
-        timeInput.value = btn.getAttribute('data-time') || '';
-      }
-    });
-  });
-
-  // 5. Submit del formulari connectat a SUPABASE
+  // 5. Submit del formulari que fa UPDATE a la taula 'slots'
   const form = document.getElementById('booking-form');
 
   form?.addEventListener('submit', async (e) => {
@@ -125,47 +166,41 @@ export function initBookingModal() {
     const submitBtn = form.querySelector('.submit-btn');
     const originalBtnText = submitBtn ? submitBtn.innerText : '';
 
-    // Recollim els valors dels camps
     const fullName = document.getElementById('full-name')?.value;
     const phone = document.getElementById('phone')?.value;
     const service = serviceSelect?.value;
-    const gender = genderInput?.value;
     const date = dateInput?.value;
     const time = timeInput?.value;
 
-    // Validació prèvia
     if (!date || !time) {
       alert("Si us plau, selecciona una data i una hora per a la reserva.");
       return;
     }
 
-    // Canviem el text del botó mentre s'envia
     if (submitBtn) submitBtn.innerText = "Guardant...";
 
     try {
-      // Inserim la reserva a la taula 'bookings' de Supabase
-      const { data, error } = await supabase
-        .from('bookings')
-        .insert([
-          { 
-            full_name: fullName, 
-            phone: phone, 
-            service: service, 
-            gender: gender, 
-            booking_date: date, 
-            booking_time: time 
-          }
-        ]);
+      // Actualitzem l'slot existent a reservat
+      const { error } = await supabase
+        .from('slots')
+        .update({
+          is_reserved: true,
+          client_name: fullName,
+          client_phone: phone,
+          service: service
+        })
+        .eq('date', date)
+        .eq('time', time);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       alert(`¡Cita confirmada correctament!\nEns veiem el dia ${date} a les ${time}.`);
       
-      // Resetejem formulari i treiem la selecció activa de botons
       form.reset();
       document.querySelectorAll('.time-btn, .calendar-day-btn').forEach(b => b.classList.remove('active'));
+      if (timeGridContainer) {
+        timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #888;">Selecciona primer una data per veure la disponibilitat.</p>`;
+      }
       closeModal();
 
     } catch (err) {

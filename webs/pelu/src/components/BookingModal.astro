@@ -68,21 +68,17 @@ const t = useTranslations(lang);
           <div class="calendar-weekdays">
             <div>{t('days.mon')}</div><div>{t('days.tue')}</div><div>{t('days.wed')}</div><div>{t('days.thu')}</div><div>{t('days.fri')}</div><div>{t('days.sat')}</div><div>{t('days.sun')}</div>
           </div>
-          <div class="calendar-days" id="calendar-days-container">
-            </div>
+          <div class="calendar-days" id="calendar-days-container"></div>
         </div>
         <input type="hidden" name="date" id="date-input" required />
       </div>
 
       <div class="form-group">
         <label>{t('form.hour_selector')}</label>
-        <div class="time-grid">
-          <button type="button" class="time-btn" data-time="09:00">09:00</button>
-          <button type="button" class="time-btn" data-time="10:30">10:30</button>
-          <button type="button" class="time-btn" data-time="12:00">12:00</button>
-          <button type="button" class="time-btn" data-time="16:00">16:00</button>
-          <button type="button" class="time-btn" data-time="17:30">17:30</button>
-          <button type="button" class="time-btn" data-time="19:00">19:00</button>
+        <div class="time-grid" id="time-grid-container">
+          <p class="no-date-msg" style="grid-column: 1/-1; font-size: 0.85rem; color: #888; text-align: center;">
+            Selecciona primer una data per veure la disponibilitat.
+          </p>
         </div>
         <input type="hidden" name="time" id="time-input" required />
       </div>
@@ -91,26 +87,23 @@ const t = useTranslations(lang);
     </form>
   </div>
 </div>
+
 <style>
-    /* ACTUALITZA L'OVERLAY PERQUÈ SUPORTI EL CENTRAT ABSOLUT */
-    .modal-overlay {
+  .modal-overlay {
     position: fixed;
-    top: 0; 
-    left: 0;
-    width: 100vw; 
-    height: 100vh;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
     background-color: rgba(26, 25, 23, 0);
     display: flex;
-    justify-content: center; /* Centrat horitzontal */
-    align-items: center;     /* Centrat vertical */
+    justify-content: center;
+    align-items: center;
     z-index: 9999;
     opacity: 0;
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
+  }
 
-    /* ACTUALITZA LA TARGETA PER TREURE POSSIBLES MARGES QUE LA DESPLACIN */
-    .booking-card {
+  .booking-card {
     background: #ffffff;
     padding: 40px;
     border-radius: 32px;
@@ -121,16 +114,13 @@ const t = useTranslations(lang);
     box-shadow: 0 30px 70px rgba(28, 26, 23, 0.15);
     border: 1px solid rgba(28, 26, 23, 0.04);
     position: relative;
-    margin: 0 auto; /* Força que no hi hagi desplaçaments estranys */
+    margin: 0 auto;
     transform: scale(0.95) translateY(20px);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     color: var(--text-main);
-    }
-
-  /* El truc de la barra de desplaçament perquè quedi polida */
-  .booking-card::-webkit-scrollbar {
-    width: 6px;
   }
+
+  .booking-card::-webkit-scrollbar { width: 6px; }
   .booking-card::-webkit-scrollbar-thumb {
     background-color: rgba(28, 26, 23, 0.1);
     border-radius: 10px;
@@ -139,13 +129,12 @@ const t = useTranslations(lang);
   .modal-overlay.show {
     opacity: 1;
     pointer-events: auto;
-    background-color: rgba(26, 25, 23, 0.5); /* Fosc orgànic de fons */
+    background-color: rgba(26, 25, 23, 0.5);
   }
   .modal-overlay.show .booking-card {
     transform: scale(1) translateY(0);
   }
 
-  /* BOTÓ DE TANCAR EN FORMAT MINIMALISTA */
   .close-btn {
     position: absolute;
     top: 20px; right: 25px;
@@ -182,10 +171,9 @@ const t = useTranslations(lang);
     padding-left: 4px;
   }
 
-  /* INPUTS I SELECTS ARRODONITS I MODERNITZATS */
   select, input[type="text"], input[type="tel"], input[type="email"] {
     padding: 14px 18px; 
-    border-radius: 16px; /* Cantons arrodonits orgànics */
+    border-radius: 16px;
     border: 1px solid #e8e6e2;
     background-color: #fbfbfa; 
     color: #1a1917; 
@@ -199,7 +187,6 @@ const t = useTranslations(lang);
     box-shadow: 0 0 0 4px rgba(191, 163, 122, 0.15);
   }
 
-  /* BOTONS DE GÈNERE ESTIL CÀPSULA */
   .gender-toggle-group { display: flex; gap: 12px; }
   .gender-btn { 
     flex: 1; 
@@ -213,9 +200,7 @@ const t = useTranslations(lang);
     font-weight: 500;
     transition: all 0.3s ease; 
   }
-  .gender-btn:hover {
-    border-color: #bfa37a;
-  }
+  .gender-btn:hover { border-color: #bfa37a; }
   .gender-btn.active { 
     background: #1a1917; 
     color: #fff; 
@@ -223,7 +208,6 @@ const t = useTranslations(lang);
     box-shadow: 0 8px 20px rgba(26, 25, 23, 0.15);
   }
 
-  /* CONTENIDOR DEL CALENDARI DE LUXE */
   .custom-calendar { 
     background: #fbfbfa; 
     border: 1px solid #e8e6e2; 
@@ -252,8 +236,7 @@ const t = useTranslations(lang);
     background: #1a1917 !important; color: #fff !important; font-weight: bold; 
     box-shadow: 0 6px 15px rgba(26, 25, 23, 0.15);
   }
-  
-  /* GRID D'HORES INTERACTIVES GUAIS */
+
   .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   :global(.time-btn) { 
     padding: 12px; background: #fbfbfa; border: 1px solid #e8e6e2; 
@@ -265,8 +248,7 @@ const t = useTranslations(lang);
     background: #bfa37a !important; color: #fff !important; border-color: #bfa37a !important; font-weight: 600;
     box-shadow: 0 6px 15px rgba(191, 163, 122, 0.25);
   }
-  
-  /* BOTÓ FINAL DE SUBMIT AMB EFECTE GLOW */
+
   .submit-btn { 
     padding: 16px; 
     border: none; 
@@ -286,7 +268,5 @@ const t = useTranslations(lang);
     box-shadow: 0 10px 25px rgba(191, 163, 122, 0.3);
     transform: translateY(-2px);
   }
-  .submit-btn:active {
-    transform: translateY(0);
-  }
+  .submit-btn:active { transform: translateY(0); }
 </style>
