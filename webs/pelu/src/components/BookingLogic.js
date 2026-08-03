@@ -41,12 +41,19 @@ export function initBookingModal() {
   const genderButtons = document.querySelectorAll('.gender-btn');
   const genderInput = document.getElementById('gender-input');
 
+  // Assegurem un valor per defecte si no n'hi ha cap definit
+  if (genderInput && !genderInput.value) {
+    genderInput.value = 'female';
+  }
+
   genderButtons.forEach(button => {
     button.addEventListener('click', () => {
       genderButtons.forEach(b => b.classList.remove('active'));
       button.classList.add('active');
+      
+      const genderVal = button.getAttribute('data-gender') || 'female';
       if (genderInput) {
-        genderInput.value = button.getAttribute('data-gender') || 'female';
+        genderInput.value = genderVal;
       }
     });
   });
@@ -171,6 +178,9 @@ export function initBookingModal() {
     const service = serviceSelect?.value;
     const date = dateInput?.value;
     const time = timeInput?.value;
+    
+    // CORRECCIÓ: Extreiem el valor del gènere (i si està buit, fem servre 'female')
+    const gender = genderInput?.value || 'female';
 
     if (!date || !time) {
       alert("Si us plau, selecciona una data i una hora per a la reserva.");
@@ -187,7 +197,8 @@ export function initBookingModal() {
           is_reserved: true,
           client_name: fullName,
           client_phone: phone,
-          service: service
+          service: service,
+          gender: gender  // CORRECCIÓ: Ara s'envia el camp 'gender' a la base de dades
         })
         .eq('date', date)
         .eq('time', time);
@@ -197,6 +208,10 @@ export function initBookingModal() {
       alert(`¡Cita confirmada correctament!\nEns veiem el dia ${date} a les ${time}.`);
       
       form.reset();
+      
+      // Reiniciem l'input de gènere a 'female' per la pròxima reserva
+      if (genderInput) genderInput.value = 'female';
+      
       document.querySelectorAll('.time-btn, .calendar-day-btn').forEach(b => b.classList.remove('active'));
       if (timeGridContainer) {
         timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #888;">Selecciona primer una data per veure la disponibilitat.</p>`;
