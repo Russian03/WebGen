@@ -5,6 +5,7 @@ export function initBookingModal() {
   const openButtons = document.querySelectorAll('.open-booking-btn');
   const closeBtn = document.querySelector('.close-btn');
   const serviceSelect = document.querySelector('select[name="service"]');
+  const workerSelect = document.getElementById('worker-select'); // Element selector treballador
   const timeGridContainer = document.getElementById('time-grid-container');
   const dateInput = document.getElementById('date-input');
   const timeInput = document.getElementById('time-input');
@@ -13,11 +14,10 @@ export function initBookingModal() {
   if (!modal) return;
 
   let servicesMap = {};
+  let workersList = [];
 
-  // Horaris d'obertura de la perruqueria
-  const OPENING_HOUR = "09:00";
-  const CLOSING_HOUR = "20:00";
-  const STEP_MINUTES = 10; // Intervals de 10 minuts per triar hora
+  const STEP_MINUTES = 10;
+  const dayMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
   function timeToMinutes(timeStr) {
     const [h, m] = timeStr.split(':').map(Number);
@@ -30,20 +30,21 @@ export function initBookingModal() {
     return `${h}:${m}`;
   }
 
-  // 1. Carregar serveis des de Supabase
-  async function loadServices() {
+  // 1. Carregar serveis i treballadors des de Supabase
+  async function loadInitialData() {
     try {
-      const { data, error } = await supabase
+      // Carregar serveis
+      const { data: servicesData, error: servicesErr } = await supabase
         .from('services')
         .select('code, name, name_es, duration_female, duration_male, resource_id');
 
-      if (error) throw error;
+      if (servicesErr) throw servicesErr;
 
-      if (data && serviceSelect) {
+      if (servicesData && serviceSelect) {
         const isSpanish = (document.documentElement.lang || 'ca').toLowerCase().startsWith('es');
         serviceSelect.innerHTML = `<option value="">${isSpanish ? '-- Selecciona un servicio --' : '-- Selecciona un servei --'}</option>`;
 
-        data.forEach(s => {
+        servicesData.forEach(s => {
           servicesMap[s.code] = {
             female: s.duration_female,
             male: s.duration_male,
@@ -56,14 +57,34 @@ export function initBookingModal() {
           serviceSelect.appendChild(opt);
         });
       }
+
+      // Carregar treballadors
+      const { data: workersData, error: workersErr } = await supabase
+        .from('workers')
+        .select('id, name, schedule');
+
+      if (workersErr) throw workersErr;
+
+      if (workersData) {
+        workersList = workersData;
+        if (workerSelect) {
+          workerSelect.innerHTML = `<option value="any">Sense preferència (qualsevol disponibilitat)</option>`;
+          workersData.forEach(w => {
+            const opt = document.createElement('option');
+            opt.value = w.id;
+            opt.textContent = w.name;
+            workerSelect.appendChild(opt);
+          });
+        }
+      }
     } catch (err) {
-      console.error("Error carregant serveis:", err);
+      console.error("Error carregant dades inicials:", err);
     }
   }
 
-  loadServices();
+  loadInitialData();
 
-  // 2. Obrir i tancar el Modal (AQUESTA ÉS LA PART QUE FALTAVA)
+  // 2. Obrir i tancar el Modal
   function openModal(e) {
     e.preventDefault();
     document.body.style.overflow = 'hidden';
@@ -107,6 +128,7 @@ export function initBookingModal() {
   });
 
   serviceSelect?.addEventListener('change', calculateOptimizedSlots);
+  workerSelect?.addEventListener('change', calculateOptimizedSlots);
 
   // 4. Calendari
   const monthYearLabel = document.getElementById('calendar-month-year');
@@ -161,13 +183,14 @@ export function initBookingModal() {
   
   renderCalendar();
 
-  // 5. Càlcul dinàmic d'horaris lliures
+  // 5. Càlcul dinàmic d'horaris lliures segons el Treballador i el seu Horari
   async function calculateOptimizedSlots() {
     if (!timeGridContainer) return;
 
     const selectedServiceCode = serviceSelect?.value;
     const selectedDate = dateInput?.value;
     const selectedGender = genderInput?.value || 'female';
+    const selectedWorkerId = workerSelect?.value || 'any';
 
     if (!selectedServiceCode) {
       timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #888;">Selecciona primer un servei.</p>`;
@@ -185,66 +208,82 @@ export function initBookingModal() {
     timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #888;">Calculant disponibilitat...</p>`;
 
     try {
-      let maxAllowedCapacity = 1;
-      if (serviceInfo?.resource_id) {
-        const { data: resourceData } = await supabase
-          .from('resources')
-          .select('quantity')
-          .eq('id', serviceInfo.resource_id)
-          .maybeSingle();
+      const dateObj = new Date(selectedDate);
+      const dayName = dayMap[dateObj.getDay()];
 
-        if (resourceData?.quantity) {
-          maxAllowedCapacity = resourceData.quantity;
-        }
-      }
-
+      // Obtenir totes les reserves d'aquell dia
       const { data: existingBookings, error } = await supabase
         .from('bookings')
-        .select('start_time, end_time')
+        .select('start_time, end_time, worker_id')
         .eq('date', selectedDate);
 
       if (error) throw error;
 
-      const dayStartMins = timeToMinutes(OPENING_HOUR);
-      const dayEndMins = timeToMinutes(CLOSING_HOUR);
+      // Filtrar quins treballadors estan actius aquest dia
+      const activeWorkers = selectedWorkerId === 'any'
+        ? workersList.filter(w => w.schedule[dayName]?.active)
+        : workersList.filter(w => w.id === selectedWorkerId && w.schedule[dayName]?.active);
 
-      let validStartTimes = [];
-
-      for (let potentialStart = dayStartMins; potentialStart + duration <= dayEndMins; potentialStart += STEP_MINUTES) {
-        const potentialEnd = potentialStart + duration;
-        let isSlotAvailable = true;
-
-        for (let currentMinute = potentialStart; currentMinute < potentialEnd; currentMinute++) {
-          let concurrentBookings = 0;
-
-          existingBookings?.forEach(b => {
-            const bStart = timeToMinutes(b.start_time);
-            const bEnd = timeToMinutes(b.end_time);
-
-            if (currentMinute >= bStart && currentMinute < bEnd) {
-              concurrentBookings++;
-            }
-          });
-
-          if (concurrentBookings >= maxAllowedCapacity) {
-            isSlotAvailable = false;
-            break;
-          }
-        }
-
-        if (isSlotAvailable) {
-          validStartTimes.push(minutesToTime(potentialStart));
-        }
+      if (activeWorkers.length === 0) {
+        timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #e74c3c;">No hi ha personal disponible aquest dia.</p>`;
+        return;
       }
 
-      timeGridContainer.innerHTML = '';
+      let validStartTimes = new Set();
 
-      if (validStartTimes.length === 0) {
+      // Comprovar disponibilitat per cada treballador elegible
+      // Comprovar disponibilitat per cada treballador elegible
+      activeWorkers.forEach(worker => {
+        const schedule = worker.schedule[dayName];
+        
+        // Obtenir els dos intervals (suportant tant l'estructura antiga com la nova)
+        const shifts = [];
+        if (schedule.morning && schedule.afternoon) {
+          shifts.push(schedule.morning);
+          shifts.push(schedule.afternoon);
+        } else if (schedule.start && schedule.end) {
+          shifts.push({ start: schedule.start, end: schedule.end });
+        }
+
+        // Obtenir reserves d'aquest treballador en concret
+        const workerBookings = existingBookings.filter(b => b.worker_id === worker.id);
+
+        // Comprovar disponibilitat en cada torn (Matí / Tarda)
+        shifts.forEach(shift => {
+          const shiftStartMins = timeToMinutes(shift.start);
+          const shiftEndMins = timeToMinutes(shift.end);
+
+          for (let potentialStart = shiftStartMins; potentialStart + duration <= shiftEndMins; potentialStart += STEP_MINUTES) {
+            const potentialEnd = potentialStart + duration;
+            let isAvailable = true;
+
+            for (let b of workerBookings) {
+              const bStart = timeToMinutes(b.start_time);
+              const bEnd = timeToMinutes(b.end_time);
+
+              // Comprovar si hi ha solapament amb altres reserves
+              if (potentialStart < bEnd && potentialEnd > bStart) {
+                isAvailable = false;
+                break;
+              }
+            }
+
+            if (isAvailable) {
+              validStartTimes.add(minutesToTime(potentialStart));
+            }
+          }
+        });
+      });
+
+      timeGridContainer.innerHTML = '';
+      const sortedTimes = Array.from(validStartTimes).sort();
+
+      if (sortedTimes.length === 0) {
         timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #e74c3c;">No hi ha hores lliures disponibles per a aquesta durada (${duration} min).</p>`;
         return;
       }
 
-      validStartTimes.forEach(timeStr => {
+      sortedTimes.forEach(timeStr => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.classList.add('time-btn');
@@ -265,7 +304,7 @@ export function initBookingModal() {
     }
   }
 
-  // 6. Guardar la cita a la taula 'bookings'
+  // 6. Guardar la cita assignant el treballador a la taula 'bookings'
   const form = document.getElementById('booking-form');
 
   form?.addEventListener('submit', async (e) => {
@@ -277,6 +316,7 @@ export function initBookingModal() {
     const date = dateInput?.value;
     const startTime = timeInput?.value;
     const gender = genderInput?.value || 'female';
+    let workerId = workerSelect?.value;
 
     if (!service || !date || !startTime) {
       alert("Omple tots els camps necessaris (servei, data i hora).");
@@ -290,6 +330,49 @@ export function initBookingModal() {
     const endMins = startMins + duration;
     const endTime = minutesToTime(endMins);
 
+    // Si ha triat "Sense preferència", s'assigna automàticament el primer treballador lliure en aquella franja
+    if (workerId === 'any' || !workerId) {
+      const dateObj = new Date(date);
+      const dayName = dayMap[dateObj.getDay()];
+
+      const { data: existingBookings } = await supabase
+        .from('bookings')
+        .select('worker_id, start_time, end_time')
+        .eq('date', date);
+
+      const availableWorkers = workersList.filter(w => {
+        if (!w.schedule[dayName]?.active) return false;
+        
+        const schedule = w.schedule[dayName];
+        const shifts = schedule.morning && schedule.afternoon 
+          ? [schedule.morning, schedule.afternoon]
+          : [{ start: schedule.start, end: schedule.end }];
+      
+        // Comprovar si la cita entra dins de qualsevol dels seus torns (matí o tarda)
+        const fitsInAShift = shifts.some(shift => {
+          const wStart = timeToMinutes(shift.start);
+          const wEnd = timeToMinutes(shift.end);
+          return startMins >= wStart && endMins <= wEnd;
+        });
+      
+        if (!fitsInAShift) return false;
+      
+        const wBookings = (existingBookings || []).filter(b => b.worker_id === w.id);
+        return !wBookings.some(b => {
+          const bStart = timeToMinutes(b.start_time);
+          const bEnd = timeToMinutes(b.end_time);
+          return startMins < bEnd && endMins > bStart;
+        });
+      });
+
+      if (availableWorkers.length > 0) {
+        workerId = availableWorkers[0].id;
+      } else {
+        alert("Aquesta hora ja no està disponible.");
+        return;
+      }
+    }
+
     try {
       const { error } = await supabase
         .from('bookings')
@@ -300,7 +383,8 @@ export function initBookingModal() {
           client_name: fullName,
           client_phone: phone,
           service_code: service,
-          gender: gender
+          gender: gender,
+          worker_id: workerId // <--- Es guarda la ID del treballador assignat
         });
 
       if (error) throw error;
