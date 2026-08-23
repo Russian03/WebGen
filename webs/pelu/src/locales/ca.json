@@ -20,6 +20,7 @@
     "booking.date": "Selecciona la Data",
     "booking.time": "Selecciona l'Hora",
     "booking.submit": "Confirmar Reserva",
+    "booking.duration_info": "Durada aproximada del servei: {duration} min",
     "services.title": "Els Nostres Serveis Exclusive",
     "services.subtitle": "Experiències d'estil personalitzades amb productes d'alta gamma.",
     "services.cut.desc": "Tall de tendència adaptat a les teves faccions.",

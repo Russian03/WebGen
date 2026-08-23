@@ -20,6 +20,7 @@
     "booking.date": "Selecciona la Fecha",
     "booking.time": "Selecciona la Hora",
     "booking.submit": "Confirmar Reserva",
+    "booking.duration_info": "Duración aproximada del servicio: {duration} min",
     "services.title": "Nuestros Servicios Exclusivos",
     "services.subtitle": "Experiencias de estilo personalizadas con productos de alta gama.",
     "services.cut.desc": "Corte de tendencia adaptado a tus facciones.",

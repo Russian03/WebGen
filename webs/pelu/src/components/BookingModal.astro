@@ -35,6 +35,20 @@ const t = useTranslations(lang);
         />
       </div>
 
+      <!-- Afegeix aquest bloc just abans o després del camp de telèfon -->
+<div class="form-group">
+        <label for="email">{t('form.email')}</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          placeholder="Ex: marta@example.com" 
+          pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+          title="Introdueix un correu electrònic vàlid"
+          required 
+        />
+      </div>
+
       <div class="form-group">
         <label>{t('booking.service')}</label>
         <select name="service" id="service-select" required>
@@ -82,6 +96,10 @@ const t = useTranslations(lang);
 
       <div class="form-group">
         <label>{t('form.hour_selector')}</label>
+        
+        <!-- Text que informa de la durada del servei seleccionat -->
+        <p id="service-duration-info" class="duration-info"></p>
+
         <div class="time-grid" id="time-grid-container">
           <p class="no-date-msg" style="grid-column: 1/-1; font-size: 0.85rem; color: #888; text-align: center;">
             Selecciona primer una data per veure la disponibilitat.
@@ -178,6 +196,16 @@ const t = useTranslations(lang);
     padding-left: 4px;
   }
 
+  .duration-info {
+    font-size: 0.8rem;
+    color: #666;
+    font-style: italic;
+    margin-top: -2px;
+    margin-bottom: 4px;
+    padding-left: 4px;
+    display: none;
+  }
+
   select, input[type="text"], input[type="tel"], input[type="email"] {
     padding: 14px 18px; 
     border-radius: 16px;
@@ -242,6 +270,33 @@ const t = useTranslations(lang);
   :global(.calendar-day-btn.active) { 
     background: #1a1917 !important; color: #fff !important; font-weight: bold; 
     box-shadow: 0 6px 15px rgba(26, 25, 23, 0.15);
+  }
+
+  /* ESTILS DE FESTIUS, AVUI, PASSATS I EXCÉS D'ANTELACIÓ */
+  :global(.calendar-day-btn.today) {
+    border: 2px solid #bfa37a !important;
+    font-weight: bold;
+  }
+
+  :global(.calendar-day-btn.past) {
+    color: #ccc !important;
+    background-color: transparent !important;
+    cursor: not-allowed !important;
+    text-decoration: line-through;
+  }
+
+  :global(.calendar-day-btn.holiday) {
+    color: #e74c3c !important;
+    background-color: #fdeae8 !important;
+    font-weight: bold;
+    cursor: not-allowed !important;
+  }
+
+  :global(.calendar-day-btn.exceeds-max) {
+    color: #ddd !important;
+    background-color: transparent !important;
+    cursor: not-allowed !important;
+    opacity: 0.5;
   }
 
   .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
