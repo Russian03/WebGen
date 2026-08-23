@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { Resend } from 'resend';
 
 // Substitueix la teva clau de Resend (comença per 're_...')
-const resend = new Resend('re_Hjmjnen1_Cm7GNvN9NmrcgQXUsBwXRrjg');
+const resend = new Resend(import.meta.env.RESEND_API_KEY);
 
 export const POST: APIRoute = async ({ request }) => {
   try {
