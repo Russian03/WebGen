@@ -32,12 +32,62 @@ export function initBookingModal() {
     return `${h}:${m}`;
   }
 
+  // Funció per actualitzar el desplegable de treballadors segons el servei seleccionat
+  function updateWorkerSelectOptions() {
+    if (!workerSelect) return;
+    const isSpanish = (document.documentElement.lang || 'ca').toLowerCase().startsWith('es');
+    const selectedServiceCode = serviceSelect?.value;
+
+    // Guardar el valor actualment seleccionat per intentar mantenir-lo si és compatible
+    const currentSelectedWorker = workerSelect.value;
+
+    workerSelect.innerHTML = `<option value="any">${isSpanish ? 'Sin preferencia (cualquier disponibilidad)' : 'Sense preferència (qualsevol disponibilitat)'}</option>`;
+
+    const serviceInfo = servicesMap[selectedServiceCode];
+    const serviceId = serviceInfo ? serviceInfo.id : null;
+
+    // Filtrar treballadors que imparteixen el servei seleccionat basant-se en l'ID UUID a worker.services
+    const filteredWorkers = workersList.filter(worker => {
+      if (!selectedServiceCode) return true;
+      const workerServices = worker.services;
+      if (!workerServices) return true; // Per defecte si no té res especificat
+
+      // Si worker.services és un objecte amb IDs de servei com a claus i booleans com a valors
+      if (typeof workerServices === 'object' && workerServices !== null) {
+        if (serviceId) {
+          // Si està explícitament a false per aquest ID UUID, el descartem
+          if (workerServices[serviceId] === false) return false;
+          // Si existeix la clau i no és true
+          if (serviceId in workerServices && workerServices[serviceId] !== true) return false;
+        }
+        if (selectedServiceCode && workerServices[selectedServiceCode] === false) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    filteredWorkers.forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = w.id;
+      opt.textContent = w.name;
+      workerSelect.appendChild(opt);
+    });
+
+    // Restaurar selecció si encara és vàlida, sinó passar a 'any'
+    if (currentSelectedWorker && (currentSelectedWorker === 'any' || filteredWorkers.some(w => w.id === currentSelectedWorker))) {
+      workerSelect.value = currentSelectedWorker;
+    } else {
+      workerSelect.value = 'any';
+    }
+  }
+
   // 1. Carregar serveis i treballadors des de Supabase
   async function loadInitialData() {
     try {
       const { data: servicesData, error: servicesErr } = await supabase
         .from('services')
-        .select('code, name, name_es, duration_female, duration_male, resource_id');
+        .select('id, code, name, name_es, duration_female, duration_male, resource_id');
 
       if (servicesErr) throw servicesErr;
 
@@ -46,14 +96,17 @@ export function initBookingModal() {
         serviceSelect.innerHTML = `<option value="">${isSpanish ? '-- Selecciona un servicio --' : '-- Selecciona un servei --'}</option>`;
 
         servicesData.forEach(s => {
-          servicesMap[s.code] = {
+          const serviceCode = s.code || s.id;
+          servicesMap[serviceCode] = {
+            id: s.id,
+            code: serviceCode,
             female: s.duration_female,
             male: s.duration_male,
             resource_id: s.resource_id
           };
 
           const opt = document.createElement('option');
-          opt.value = s.code;
+          opt.value = serviceCode;
           opt.textContent = (isSpanish && s.name_es) ? s.name_es : s.name;
           serviceSelect.appendChild(opt);
         });
@@ -61,23 +114,14 @@ export function initBookingModal() {
 
       const { data: workersData, error: workersErr } = await supabase
         .from('workers')
-        .select('id, name, schedule, visible')
+        .select('id, name, schedule, services, visible')
         .eq('visible', true);
 
       if (workersErr) throw workersErr;
 
       if (workersData) {
         workersList = workersData;
-        if (workerSelect) {
-          const isSpanish = (document.documentElement.lang || 'ca').toLowerCase().startsWith('es');
-          workerSelect.innerHTML = `<option value="any">${isSpanish ? 'Sin preferencia (cualquier disponibilidad)' : 'Sense preferència (qualsevol disponibilitat)'}</option>`;
-          workersData.forEach(w => {
-            const opt = document.createElement('option');
-            opt.value = w.id;
-            opt.textContent = w.name;
-            workerSelect.appendChild(opt);
-          });
-        }
+        updateWorkerSelectOptions();
       }
     } catch (err) {
       console.error("Error carregant dades inicials:", err);
@@ -96,6 +140,7 @@ export function initBookingModal() {
     
     if (selectedService && serviceSelect) {
       serviceSelect.value = selectedService;
+      updateWorkerSelectOptions();
     }
 
     modal.classList.add('show');
@@ -129,7 +174,10 @@ export function initBookingModal() {
     });
   });
 
-  serviceSelect?.addEventListener('change', calculateOptimizedSlots);
+  serviceSelect?.addEventListener('change', () => {
+    updateWorkerSelectOptions();
+    calculateOptimizedSlots();
+  });
   workerSelect?.addEventListener('change', calculateOptimizedSlots);
 
   // 4. Calendari
@@ -257,6 +305,7 @@ export function initBookingModal() {
     }
 
     const serviceInfo = servicesMap[selectedServiceCode];
+    const serviceId = serviceInfo ? serviceInfo.id : null;
     const duration = serviceInfo ? (selectedGender === 'male' ? serviceInfo.male : serviceInfo.female) : 30;
 
     if (durationInfoLabel) {
@@ -303,12 +352,23 @@ export function initBookingModal() {
 
       if (error) throw error;
 
-      const activeWorkers = selectedWorkerId === 'any'
-        ? workersList.filter(w => (w.visible !== false) && w.schedule[dayName]?.active)
-        : workersList.filter(w => (w.visible !== false) && w.id === selectedWorkerId && w.schedule[dayName]?.active);
+      // Filtrar treballadors tant per visibilitat/horari com per si imparteixen el servei seleccionat
+      const activeWorkers = workersList.filter(worker => {
+        if (worker.visible === false || !worker.schedule[dayName]?.active) return false;
+
+        const workerServices = worker.services;
+        if (workerServices && typeof workerServices === 'object' && workerServices !== null) {
+          if (serviceId && workerServices[serviceId] === false) return false;
+          if (selectedServiceCode && workerServices[selectedServiceCode] === false) return false;
+          if (serviceId && serviceId in workerServices && workerServices[serviceId] !== true) return false;
+        }
+
+        if (selectedWorkerId !== 'any' && worker.id !== selectedWorkerId) return false;
+        return true;
+      });
 
       if (activeWorkers.length === 0) {
-        timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #e74c3c;">${isSpanish ? 'No hay personal disponible este día.' : 'No hi ha personal disponible aquest dia.'}</p>`;
+        timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #e74c3c;">${isSpanish ? 'No hay personal disponible este día para este servicio.' : 'No hi ha personal disponible aquest dia per a aquest servei.'}</p>`;
         return;
       }
 
@@ -325,7 +385,7 @@ export function initBookingModal() {
           shifts.push({ start: schedule.start, end: schedule.end });
         }
 
-        const workerBookings = existingBookings.filter(b => b.worker_id === worker.id);
+        const workerBookings = (existingBookings || []).filter(b => b.worker_id === worker.id);
 
         shifts.forEach(shift => {
           const shiftStartMins = timeToMinutes(shift.start);
@@ -423,6 +483,7 @@ export function initBookingModal() {
     }
 
     const serviceInfo = servicesMap[service];
+    const serviceId = serviceInfo ? serviceInfo.id : null;
     const duration = serviceInfo ? (gender === 'male' ? serviceInfo.male : serviceInfo.female) : 30;
 
     const startMins = timeToMinutes(startTime);
@@ -441,6 +502,14 @@ export function initBookingModal() {
       const availableWorkers = workersList.filter(w => {
         if (w.visible === false || !w.schedule[dayName]?.active) return false;
         
+        // Comprovar si el treballador imparteix el servei
+        const workerServices = w.services;
+        if (workerServices && typeof workerServices === 'object' && workerServices !== null) {
+          if (serviceId && workerServices[serviceId] === false) return false;
+          if (service && workerServices[service] === false) return false;
+          if (serviceId && serviceId in workerServices && workerServices[serviceId] !== true) return false;
+        }
+
         const schedule = w.schedule[dayName];
         const shifts = schedule.morning && schedule.afternoon 
           ? [schedule.morning, schedule.afternoon]
