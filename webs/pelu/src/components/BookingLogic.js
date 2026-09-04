@@ -32,6 +32,48 @@ export function initBookingModal() {
     return `${h}:${m}`;
   }
 
+  // Funció auxiliar per comprovar si un servei s'ofereix en una data determinada
+  function isServiceAvailableOnDate(serviceInfo, dateObj) {
+    if (!serviceInfo || !serviceInfo.service_schedule) return true;
+    
+    const schedule = serviceInfo.service_schedule;
+    if (!schedule || typeof schedule !== 'object' || Object.keys(schedule).length === 0) {
+      return true;
+    }
+
+    const type = schedule.type;
+
+    if (type === 'habitual') {
+      if (schedule.days && typeof schedule.days === 'object') {
+        const dayIndex = dateObj.getDay();
+        const dayName = dayMap[dayIndex]; // e.g. 'sunday', 'monday'...
+        return schedule.days[dayName] === true;
+      }
+      return true;
+    }
+
+    if (type === 'esporadic') {
+      if (schedule.date) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        return schedule.date === dateStr;
+      }
+      return true;
+    }
+
+    if (type === 'rutinari') {
+      if (Array.isArray(schedule.days_of_month)) {
+        const dayOfMonth = dateObj.getDate();
+        return schedule.days_of_month.includes(dayOfMonth);
+      }
+      return true;
+    }
+
+    return true;
+  }
+
   // Funció per actualitzar el desplegable de treballadors segons el servei seleccionat
   function updateWorkerSelectOptions() {
     if (!workerSelect) return;
@@ -87,7 +129,7 @@ export function initBookingModal() {
     try {
       const { data: servicesData, error: servicesErr } = await supabase
         .from('services')
-        .select('id, code, name, name_es, duration_female, duration_male, resource_id');
+        .select('id, code, name, name_es, duration_female, duration_male, resource_id, service_schedule');
 
       if (servicesErr) throw servicesErr;
 
@@ -102,7 +144,8 @@ export function initBookingModal() {
             code: serviceCode,
             female: s.duration_female,
             male: s.duration_male,
-            resource_id: s.resource_id
+            resource_id: s.resource_id,
+            service_schedule: s.service_schedule
           };
 
           const opt = document.createElement('option');
@@ -144,6 +187,7 @@ export function initBookingModal() {
     }
 
     modal.classList.add('show');
+    renderCalendar();
     calculateOptimizedSlots();
   }
 
@@ -176,6 +220,7 @@ export function initBookingModal() {
 
   serviceSelect?.addEventListener('change', () => {
     updateWorkerSelectOptions();
+    renderCalendar();
     calculateOptimizedSlots();
   });
   workerSelect?.addEventListener('change', calculateOptimizedSlots);
@@ -226,6 +271,9 @@ export function initBookingModal() {
     const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
     const lastDay = new Date(year, month + 1, 0).getDate();
 
+    const selectedServiceCode = serviceSelect?.value;
+    const currentServiceInfo = selectedServiceCode ? servicesMap[selectedServiceCode] : null;
+
     for (let i = 0; i < firstDayIndex; i++) {
       daysContainer.appendChild(document.createElement('div'));
     }
@@ -244,24 +292,46 @@ export function initBookingModal() {
       const isToday = thisDate.getTime() === today.getTime();
       const isHoliday = holidayDates.has(formattedDate);
       const exceedsMaxDays = thisDate > maxBookingDate;
+      const isServiceAvailable = isServiceAvailableOnDate(currentServiceInfo, thisDate);
 
       if (isToday) {
         dayBtn.classList.add('today');
       }
 
+      if (dateInput && dateInput.value === formattedDate) {
+        dayBtn.classList.add('active');
+      }
+
+      // Funció auxiliar per aplicar l'estil deshabilitat visualment
+      const disableButton = (className, titleText) => {
+        dayBtn.disabled = true;
+        dayBtn.classList.add('disabled', className);
+        dayBtn.style.opacity = '0.35';
+        dayBtn.style.cursor = 'not-allowed';
+        dayBtn.style.pointerEvents = 'none';
+        dayBtn.style.backgroundColor = '#f2f2f2';
+        dayBtn.style.color = '#aaa';
+        if (titleText) dayBtn.title = titleText;
+      };
+
       if (isPast) {
-        dayBtn.disabled = true;
-        dayBtn.classList.add('disabled', 'past');
+        disableButton('past');
       } else if (isHoliday) {
-        dayBtn.disabled = true;
-        dayBtn.classList.add('disabled', 'holiday');
-        dayBtn.title = isSpanish ? 'Día festivo' : 'Dia festiu';
+        disableButton('holiday', isSpanish ? 'Día festivo' : 'Dia festiu');
       } else if (exceedsMaxDays) {
-        dayBtn.disabled = true;
-        dayBtn.classList.add('disabled', 'exceeds-max');
-        dayBtn.title = isSpanish 
-          ? `No se puede reservar con más de ${MAX_ADVANCE_DAYS} días de antelación` 
-          : `No es pot reservar amb més de ${MAX_ADVANCE_DAYS} dies d'antelació`;
+        disableButton(
+          'exceeds-max',
+          isSpanish 
+            ? `No se puede reservar con más de ${MAX_ADVANCE_DAYS} días de antelación` 
+            : `No es pot reservar amb més de ${MAX_ADVANCE_DAYS} dies d'antelació`
+        );
+      } else if (!isServiceAvailable) {
+        disableButton(
+          'no-service',
+          isSpanish
+            ? 'Servicio no disponible este día'
+            : 'Servei no disponible aquest dia'
+        );
       } else {
         dayBtn.addEventListener('click', () => {
           document.querySelectorAll('.calendar-day-btn').forEach(b => b.classList.remove('active'));
@@ -326,6 +396,16 @@ export function initBookingModal() {
     if (selectedDate < todayStr) {
       timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #e74c3c;">${isSpanish ? 'No se puede reservar en fechas pasadas.' : 'No es pot reservar en dates passades.'}</p>`;
       return;
+    }
+
+    // Validar si el servei s'imparteix en la data seleccionada
+    if (selectedDate) {
+      const [y, m, d] = selectedDate.split('-').map(Number);
+      const selDateObj = new Date(y, m - 1, d);
+      if (!isServiceAvailableOnDate(serviceInfo, selDateObj)) {
+        timeGridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align: center; font-size: 0.85rem; color: #e74c3c;">${isSpanish ? 'El servicio no se imparte en este día.' : 'El servei no s\'imparteix aquest dia.'}</p>`;
+        return;
+      }
     }
 
     const { data: holidayCheck } = await supabase
