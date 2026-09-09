@@ -1,5 +1,4 @@
 ---
-// Rebem les variables necessàries des del Layout pare
 const { currentLocale, t, languageToggleLink } = Astro.props;
 ---
 
@@ -15,15 +14,15 @@ const { currentLocale, t, languageToggleLink } = Astro.props;
   <div class="nav-links" id="nav-links">
     <a href="#home">{t('nav.home')}</a>
     <a href="#services">{t('nav.services')}</a>
+    <a href="#about">{t('nav.about')}</a>
     <button class="open-booking-btn nav-cta">{t('hero.cta')}</button>
     <a href={languageToggleLink} class="lang-selector">
-      {currentLocale === 'ca' ? 'ES' : 'CA'}
+      {currentLocale === 'ca' ? 'CA' : 'ES'}
     </a>
   </div>
 </nav>
 
 <script>
-  // Control de l'obertura i tancament del menú en mòbil
   const menuToggle = document.getElementById('menu-toggle');
   const navLinks = document.getElementById('nav-links');
   const items = navLinks?.querySelectorAll('a, button');
@@ -33,7 +32,6 @@ const { currentLocale, t, languageToggleLink } = Astro.props;
     navLinks?.classList.toggle('active');
   });
 
-  // Tanca el menú automàticament en clicar qualsevol opció
   items?.forEach(item => {
     item.addEventListener('click', () => {
       menuToggle?.classList.remove('active');
@@ -144,7 +142,6 @@ const { currentLocale, t, languageToggleLink } = Astro.props;
     color: #fff !important;
   }
 
-  /* BOTÓ HAMBURGUESA (Amagat en ordinadors) */
   .menu-toggle {
     display: none;
     flex-direction: column;
@@ -165,7 +162,6 @@ const { currentLocale, t, languageToggleLink } = Astro.props;
     transition: all 0.3s ease;
   }
 
-  /* Animació del botó a 'X' quan s'obre */
   .menu-toggle.active .bar:nth-child(1) {
     transform: translateY(8px) rotate(45deg);
   }
@@ -176,19 +172,18 @@ const { currentLocale, t, languageToggleLink } = Astro.props;
     transform: translateY(-8px) rotate(-45deg);
   }
 
-  /* --- ADAPTACIÓ NOMÉS PER A MÒBIL (< 768px) --- */
   @media (max-width: 768px) {
     .navbar {
-      padding: 18px 20px; /* Reduïm espai lateral a mòbil */
+      padding: 18px 20px;
     }
 
     .menu-toggle {
-      display: flex; /* Es mostra la icona de 3 ratlles */
+      display: flex;
     }
 
     .nav-links {
       position: absolute;
-      top: 100%; /* S'obre just a sota de la barra */
+      top: 100%;
       left: 0;
       width: 100%;
       background-color: rgba(247, 245, 240, 0.98);
@@ -201,11 +196,9 @@ const { currentLocale, t, languageToggleLink } = Astro.props;
       border-bottom: 1px solid rgba(191, 163, 122, 0.2);
       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
 
-      /* Amagat per defecte */
       display: none;
     }
 
-    /* Quan s'activa amb JavaScript */
     .nav-links.active {
       display: flex;
     }
