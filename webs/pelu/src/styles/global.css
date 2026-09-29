@@ -1,0 +1,22 @@
+:root {
+    --bg-primary: #f5f3ef; /* Un to sorra clar, trenca el blanc pur i és molt càlid */
+    --bg-surface: #ffffff;
+    --accent: #bfa37a; /* Daurat xampany una mica més intens */
+    --text-main: #1a1917; 
+    --text-muted: #615e58;
+    --font-main: 'Helvetica Neue', system-ui, -apple-system, sans-serif;
+  }
+  
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-primary);
+    /* Un degradat una mica més fosc sobre la imatge per donar contrast */
+    background: linear-gradient(rgba(245, 243, 239, 0.75), rgba(245, 243, 239, 0.85)), 
+                url('https://images.unsplash.com/photo-1633681926035-ec1ac984418a?auto=format&fit=crop&q=60&w=1200') no-repeat center center fixed;
+    background-size: cover;
+    color: var(--text-main);
+    font-family: var(--font-main);
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }

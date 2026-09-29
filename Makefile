@@ -1,38 +1,32 @@
+# WebGen · atajos. Uso: make <orden> WEB=<carpeta de webs/>
+.PHONY: help install dev build build-all new deploy check-web
+
 help:
-	@echo "Comandos disponibles:"
-	@echo "  make new NAME=mi_web"
-	@echo "  make run NAME=mi_web"
-	@echo "  make install NAME=mi_web PKG=gsap"
-	@echo "  make install NAME=mi_web PKG=framer-motion"
-	@echo "  make install NAME=mi_web PKG="motion clsx tailwind-merge"
-
-new:
-	mkdir -p webs
-	docker compose run --rm astro bash -c "\
-	cd /app/webs && \
-	npm create astro@latest $(NAME) -- --template basics --yes --no-install && \
-	cd $(NAME) && \
-	npm pkg set dependencies.astro=latest && \
-	npm install && \
-	npx astro add react --yes && \
-	npx astro add tailwind --yes \
-	"
-	sudo chown -R $(USER):$(USER) webs/$(NAME)
-	@echo "Proyecto $(NAME) creado correctamente"
-
-run:
-	docker compose run --rm \
-	-p 4321:4321 \
-	-v $(PWD)/webs/$(NAME):/app \
-	-w /app \
-	astro \
-	bash -c "npm install && rm -f .astro/dev.json && npm run dev -- --host"
+	@echo "make install              Instala las dependencias de todas las webs"
+	@echo "make dev WEB=bien         Servidor local en http://localhost:4321"
+	@echo "make build WEB=bien       Compila una web en webs/bien/dist"
+	@echo "make build-all            Compila todas las webs (lo mismo que el CI)"
+	@echo "make new WEB=mi-web       Crea una web nueva desde templates/base"
+	@echo "make deploy WEB=bien      Publica una web en Cloudflare Pages (desde main)"
 
 install:
-	docker compose run --rm \
-	-v $(PWD)/webs/$(NAME):/app \
-	-w /app \
-	astro \
-	bash -c "npm install $(PKG)"
-	sudo chown -R $(USER):$(USER) webs/$(NAME)
-	@echo "Paquete $(PKG) instalado en $(NAME)"
+	npm install
+
+check-web:
+	@test -n "$(WEB)" || (echo "Falta WEB=<nombre>"; exit 1)
+	@test -d "webs/$(WEB)" || (echo "No existe webs/$(WEB)"; exit 1)
+
+dev: check-web
+	npm run dev -w webs/$(WEB) -- --host
+
+build: check-web
+	npm run build -w webs/$(WEB)
+
+build-all:
+	npm run build:all
+
+new:
+	@bash scripts/new-web.sh "$(WEB)"
+
+deploy: check-web
+	@bash scripts/deploy.sh "$(WEB)"
