@@ -1,7 +1,16 @@
 {
-  "dependencies": {
-    "clsx": "^2.1.1",
-    "motion": "^12.42.2",
-    "tailwind-merge": "^3.6.0"
+  "name": "webgen",
+  "private": true,
+  "type": "module",
+  "description": "Webs de negocios locales: una carpeta por web en webs/, publicadas en Cloudflare Pages.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "workspaces": [
+    "webs/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:all": "npm run build --workspaces --if-present"
   }
 }

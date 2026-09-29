@@ -1,0 +1,8 @@
+@import "tailwindcss";
+/* Fuente alojada en la propia web (sin Google Fonts: más rápido y sin
+   enviar datos de los visitantes a terceros). */
+@import "@fontsource-variable/inter";
+
+@theme {
+  --font-sans: "Inter Variable", system-ui, sans-serif;
+}

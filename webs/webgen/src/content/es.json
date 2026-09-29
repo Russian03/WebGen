@@ -1,0 +1,49 @@
+{
+    "nav": {
+      "services": "Servicios",
+      "pricing": "Planes",
+      "projects": "Proyectos",
+      "contact": "Contacto"
+    },
+  
+    "hero": {
+      "pretitle": "WEBS PARA NEGOCIOS",
+      "title": "Creamos la web de tu negocio.",
+      "subtitle": "Rápida. Moderna. Sin complicaciones.",
+      "primaryButton": "Ver planes",
+      "secondaryButton": "Hablemos"
+    },
+  
+    "features": {
+      "title": "Todo lo que necesita tu negocio",
+      "items": [
+        "Webs modernas",
+        "SEO y posicionamiento",
+        "Mantenimiento continuo",
+        "Hosting y dominio",
+        "Soporte técnico",
+        "Marketing digital"
+      ]
+    },
+  
+    "pricing": {
+      "title": "Planes simples y escalables"
+    },
+  
+    "cta": {
+      "title": "Digitaliza tu negocio hoy.",
+      "button": "Empecemos"
+    },
+
+    "contact": {
+      "title": "Hablemos",
+      "name": "Nombre",
+      "phone": "Teléfono móvil",
+      "email": "Correo",
+      "message": "Cuéntanos tu proyecto...",
+      "send": "Enviar",
+      "sending": "Enviando...",
+      "success": "¡Mensaje enviado!",
+      "error": "Error enviando mensaje"
+    }
+  }
