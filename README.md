@@ -7,7 +7,6 @@ Webs de negocios locales. Cada web vive en su carpeta de `webs/` (Astro + React
 |---|---|---|
 | `webs/bien` | Bien Kebab (carta y presentación) | `web-bien` |
 | `webs/pelu` | HairStudio, demo de peluquería con reservas | `web-pelu` |
-| `webs/webgen` | Web de la agencia (servicios, precios, contacto) | `web-webgen` |
 | `templates/base` | Plantilla para webs nuevas | — |
 
 ## Requisitos
@@ -41,8 +40,8 @@ Las ramas antiguas (una web por rama) están archivadas como etiquetas
 ## Reglas
 
 - **Repositorio público**: nada de secretos. Solo claves públicas por diseño
-  (la *publishable* de Supabase, la *site key* de Turnstile, la pública de
-  EmailJS). Todo lo demás va en el servidor (AJschedule).
+  (la *publishable* de Supabase, la *site key* de Turnstile). Todo lo demás
+  va en el servidor (AJschedule).
 - Fuentes alojadas en la propia web (paquetes `@fontsource`), no Google Fonts.
 - Cada web tiene `web.json` (nombre y proyecto de Cloudflare) y
   `public/_headers` (cabeceras de seguridad).
